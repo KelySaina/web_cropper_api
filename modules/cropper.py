@@ -1,8 +1,8 @@
 import cv2
-import pytesseract
+# import pytesseract
 import os
 from datetime import date
-from autocorrect import Speller
+# from autocorrect import Speller
 from modules.toImage import toImgClass
 
 
@@ -50,23 +50,23 @@ class Cropper:
                 x, y, w, h = cv2.boundingRect(approx)
 
                 # Check if width is at least 100 pixels
-                if w >= 150:
+                if w >= 150 and h >= 150:
                     # Crop the region from the original image
                     cropped_region = image[y:y+h, x:x+w]
 
                     # Perform OCR on the cropped image
-                    text = pytesseract.image_to_string(cropped_region)
+                    # text = pytesseract.image_to_string(cropped_region)
 
-                    spell = Speller(lang='fr')
-                    corrected_text = spell(text)
+                    # spell = Speller(lang='fr')
+                    # corrected_text = spell(text)
 
                     # Save the cropped image
                     cv2.imwrite(os.path.join(
                         output_dir, f'cropped_{i}.jpg'), cropped_region)
 
                     # Save the OCR result to a file with the same name as the cropped image
-                    with open(os.path.join(output_dir, f'cropped_{i}.txt'), 'w') as file:
-                        file.write(corrected_text)
+                    # with open(os.path.join(output_dir, f'cropped_{i}.txt'), 'w') as file:
+                    #    file.write(corrected_text)
 
                     # Add the file path to the list
                     cropped_image_paths.append(
