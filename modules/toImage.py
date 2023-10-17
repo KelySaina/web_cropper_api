@@ -10,7 +10,7 @@ class toImgClass:
         today_date = date.today().strftime("%Y-%m-%d")
 
         # Create a directory to store the images with today's date
-        output_directory = f"imagesUploaded/{today_date}/"
+        output_directory = os.path.join("imagesUploaded", today_date)
         os.makedirs(output_directory, exist_ok=True)
 
         # Convert PDF to images
@@ -20,6 +20,7 @@ class toImgClass:
         pdf_base_name = os.path.splitext(os.path.basename(pdf_path))[0]
 
         # Save the image with the same name as the PDF
-        images[0].save(f"{output_directory}/{pdf_base_name}.png", "PNG")
+        images[0].save(os.path.join(output_directory,
+                       f"{pdf_base_name}.png"), "PNG")
 
         return output_directory

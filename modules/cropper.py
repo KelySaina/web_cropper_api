@@ -32,7 +32,7 @@ class Cropper:
         today_date = date.today().strftime("%Y-%m-%d")
 
         # Create a directory to store the images with today's date
-        output_dir = f"imagesCropped/{today_date}/{base_name}"
+        output_dir = os.path.join("imagesCropped", today_date, base_name)
         os.makedirs(output_dir, exist_ok=True)
 
         # Array to store file paths of cropped images
@@ -50,7 +50,7 @@ class Cropper:
                 x, y, w, h = cv2.boundingRect(approx)
 
                 # Check if width is at least 100 pixels
-                if w >= 150 and h >= 150:
+                if w >= 150:
                     # Crop the region from the original image
                     cropped_region = image[y:y+h, x:x+w]
 
@@ -71,4 +71,5 @@ class Cropper:
                     # Add the file path to the list
                     cropped_image_paths.append(
                         os.path.join(output_dir, f'cropped_{i}.jpg'))
+
         return cropped_image_paths

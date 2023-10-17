@@ -12,8 +12,9 @@ import shutil
 app = Flask(__name__)
 CORS(app)
 
-app.config['UPLOAD_FOLDER'] = "imagesUploaded/"
-app.config['CROPPED_FOLDER'] = "imagesCropped/"
+# Use os.path.join for file paths
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), "imagesUploaded")
+app.config['CROPPED_FOLDER'] = os.path.join(os.getcwd(), "imagesCropped")
 
 global_orig = ''
 
@@ -35,9 +36,7 @@ def uploaded_file(filename):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    # Get today's date in YYYYMMDD format
     today_date = date.today().strftime("%Y-%m-%d")
-
     host = '127.0.0.1'
 
     if 'image' not in request.files:
@@ -50,28 +49,25 @@ def upload_file():
 
     if file:
         global global_orig
-        output_directory = f"imagesUploaded/{today_date}/"
+        output_directory = os.path.join(
+            app.config['UPLOAD_FOLDER'], today_date)
         os.makedirs(output_directory, exist_ok=True)
         file.save(os.path.join(output_directory, file.filename))
 
-        # Get the file extension
         fileN, file_extension = os.path.splitext(file.filename)
 
-        # Check if it's a PDF
         if file_extension.lower() == '.pdf':
-            # Process PDF (convert to images first)
-            # You can use a PDF processing library like PyMuPDF or pdf2image here
             i = toImgClass()
-            fn = i.fromPDF(f"{output_directory}{file.filename}")
+            fn = i.fromPDF(os.path.join(output_directory, file.filename))
             imgFromPDFName = f"{fileN}.png"
-            uploaded_url = f'http://{host}:5000/{output_directory}{imgFromPDFName}'
+            uploaded_url = f'http://{host}:5000/imagesUploaded/{today_date}/{imgFromPDFName}'
 
-            global_orig = f'{output_directory}{imgFromPDFName}'
+            global_orig = os.path.join(output_directory, imgFromPDFName)
         else:
             fn = file.filename
-            uploaded_url = f'http://{host}:5000/{output_directory}{fn}'
+            uploaded_url = f'http://{host}:5000/imagesUploaded/{today_date}/{fn}'
 
-            global_orig = f'{output_directory}{fn}'
+            global_orig = os.path.join(output_directory, fn)
 
         return jsonify({"url": uploaded_url, 'msg': 'uploaded'})
 
@@ -85,30 +81,25 @@ def crop_file():
 
     file_name, file_extension = os.path.splitext(filename)
 
-    # Get the file extension
     fn, file_extension = os.path.splitext(filename)
 
-    # Check if it's a PDF
     if file_extension.lower() == '.pdf':
-        # Process PDF (convert to images first)
-        # You can use a PDF processing library like PyMuPDF or pdf2image here
         fn = f"{fn}.png"
     else:
         fn = f"{fn}{file_extension}"
 
     today_date = date.today().strftime("%Y-%m-%d")
 
-    output_directory = f"./imagesCropped/{today_date}/{file_name}/"
-    get_directory = f"./imagesUploaded/{today_date}/"
+    output_directory = os.path.join(
+        os.getcwd(), f"imagesCropped/{today_date}/{file_name}/")
+    get_directory = os.path.join(os.getcwd(), f"imagesUploaded/{today_date}/")
 
-    # Check if the output directory exists
     if os.path.exists(output_directory):
-        # If it exists, delete it along with all its contents
         shutil.rmtree(output_directory)
 
     os.makedirs(output_directory, exist_ok=True)
 
-    treat_url = f'{get_directory}{fn}'
+    treat_url = os.path.join(get_directory, fn)
 
     c = Cropper()
 
@@ -120,7 +111,6 @@ def process_items():
     items = request.json.get('items')
 
     if items:
-        # Check if items exist on the server
         exist_check = all(os.path.exists(item) for item in items)
 
         if exist_check:
